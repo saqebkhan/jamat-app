@@ -1,58 +1,104 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+  <div class="hacker-news-list">
+    <!-- <div class="hacker-news-header">
+      <a target="_blank" href="http://www.ycombinator.com/">
+        <img src="https://news.ycombinator.com/y18.gif" />
+      </a>
+      <span>Hacker News</span>
+    </div> -->
+    <div class="hacker-news-item" v-for="(item, index) in list" :key="index">
+      <span class="num" v-text="index + 1"></span>
+      <p>
+        <!-- <a target="_blank" :href="item.url" v-text="item.title"></a> -->
+        {{ item.name }}
+      </p>
+    </div>
+    <infinite-loading @infinite="infiniteHandler">
+      <span slot="no-more"> There is no more Hacker News :( </span>
+    </infinite-loading>
   </div>
 </template>
 
 <script>
+import InfiniteLoading from "vue-infinite-loading";
+import axios from "axios";
+
+const api = "http://hn.algolia.com/api/v1/search_by_date?tags=story";
+
 export default {
-  name: 'HelloWorld',
-  props: {
-    msg: String
-  }
-}
+  data() {
+    return {
+      data: [
+        { name: "Saqeb", number: 1 },
+        { name: "Ali", number: 2 },
+        { name: "Amer", number: 3 },
+        { name: "Sameer", number: 4 },
+        { name: "Shahzeb", number: 5 },
+        { name: "Wasim", number: 6 },
+        { name: "Gaffar", number: 7 },
+        { name: "Sattar", number: 8 },
+        { name: "Sami", number: 9 },
+        { name: "Adil", number: 10 },
+        { name: "Tohit", number: 11 },
+        { name: "Bond", number: 12 },
+        { name: "javed", number: 13 },
+        { name: "hakeem", number: 14 },
+        { name: "Dawood", number: 15 },
+      ],
+      list: [],
+    };
+  },
+  methods: {
+    infiniteHandler($state) {
+      axios
+        .get(api, {
+          params: {
+            page: this.list.length / 20 + 1,
+          },
+        })
+        .then(({ data }) => {
+          if (data.hits.length) {
+            this.list = this.list.concat(data.hits);
+            $state.loaded();
+            if (this.list.length / 20 === 10) {
+              $state.complete();
+            }
+          } else {
+            $state.complete();
+          }
+        });
+    },
+  },
+  components: {
+    InfiniteLoading,
+  },
+};
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style>
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.card {
+  width: 200px;
+  height: 300px;
+  margin: 10px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  text-align: center;
+}
+
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
 h3 {
-  margin: 40px 0 0;
+  margin-top: 10px;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
+.hacker-news-item {
+  height: 200px;
 }
 </style>
